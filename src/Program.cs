@@ -1,6 +1,5 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
-using Planara.Common.Auth.Jwt;
 using Planara.Common.Configuration;
 using Planara.Common.GraphQL.Fusion;
 using StackExchange.Redis;
@@ -36,7 +35,8 @@ builder
             Expect100ContinueTimeout = TimeSpan.Zero,
             MaxConnectionsPerServer = c
         };
-    });
+    })
+    .AddHeaderPropagation();
 
 builder.Services.AddHeaderPropagation(c =>
 {
@@ -46,7 +46,6 @@ builder.Services.AddHeaderPropagation(c =>
 
 builder
     .Services
-    .AddJwtAuth(builder.Configuration)
     .AddFusionGatewayServer()
     .UseSchemaFromRedis(
         _ =>
@@ -64,11 +63,8 @@ app.MapHealthChecks("/health");
 
 app
     .UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod())
-    .UseWebSockets()
     .UseRouting()
-    .UseAuthentication()
-    .UseAuthorization()
-    .UseHeaderPropagation() ;
+    .UseHeaderPropagation();
 
 app.MapGraphQL("/planara/api")
     .RequireRateLimiting("graphql");
