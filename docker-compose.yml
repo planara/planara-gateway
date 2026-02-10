@@ -1,0 +1,51 @@
+services:
+  auth:
+    image: ghcr.io/planara/planara-auth:latest
+    container_name: planara-auth
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    command: ["--migrate"]
+    environment:
+      DbConnections__Postgres__ConnectionString: "User ID=postgres;Password=postgres;Host=postgres;Port=5432;Database=auth;Pooling=true;Include Error Detail=true"
+      DbConnections__Redis__ConnectionString: "redis:6379"
+      Jwt__Issuer: "planara-auth"
+      Jwt__Audience: "planara"
+      Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+      Jwt__AccessTokenMinutes: "15"
+      Kafka__BootstrapServers: "kafka:29092"
+      Kafka__ProducerTopics__Auth: "auth"
+      GraphQL__Name: "GraphQLSchema"
+      
+  accounts:
+    image: ghcr.io/planara/planara-accounts:latest
+    container_name: planara-accounts
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
+      - "8083:8081"
+    command: [ "--migrate" ]
+    environment:
+      DbConnections__Postgres__ConnectionString: "User ID=postgres;Password=postgres;Host=postgres;Port=5432;Database=accounts;Pooling=true;Include Error Detail=true"
+      DbConnections__Redis__ConnectionString: "redis:6379"
+      Jwt__Issuer: "planara-auth"
+      Jwt__Audience: "planara"
+      Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+      Jwt__AccessTokenMinutes: "15"
+      Kafka__BootstrapServers: "kafka:29092"
+      Kafka__ConsumerTopics__Auth: "auth"
+      Kafka__ConsumerGroupId: "planara-accounts"
+      GraphQL__Name: "GraphQLSchema"
+
+volumes:
+  pgdata:
+  redis-data:
