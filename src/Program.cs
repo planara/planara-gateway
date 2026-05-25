@@ -8,11 +8,30 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddSettingsJson();
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 1024 * 1024 * 100;
+});
+
 builder.Services.AddRateLimiter(options =>
 {
+    options.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync("Rate limit exceeded", cancellationToken);
+    };
+
     options.AddFixedWindowLimiter("graphql", limiter =>
     {
         limiter.PermitLimit = 100;
+        limiter.Window = TimeSpan.FromSeconds(10);
+        limiter.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiter.QueueLimit = 20;
+    });
+
+    options.AddFixedWindowLimiter("rest", limiter =>
+    {
+        limiter.PermitLimit = 50;
         limiter.Window = TimeSpan.FromSeconds(10);
         limiter.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
         limiter.QueueLimit = 20;
@@ -46,6 +65,11 @@ builder.Services.AddHeaderPropagation(c =>
 
 builder
     .Services
+    .AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("Rest"));
+
+builder
+    .Services
     .AddFusionGatewayServer()
     .UseSchemaFromRedis(
         _ =>
@@ -57,16 +81,23 @@ builder
 
 var app = builder.Build();
 
+app.UseRouting();
+
+app.UseCors(c => c
+    .AllowAnyOrigin()
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+);
+
 app.UseRateLimiter();
+
+app.UseHeaderPropagation();
 
 app.MapHealthChecks("/health");
 
-app
-    .UseCors(c => c.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod())
-    .UseRouting()
-    .UseHeaderPropagation();
-
-app.MapGraphQL("/planara/api")
+app.MapGraphQL("/api")
     .RequireRateLimiting("graphql");
+
+app.MapReverseProxy();
 
 app.Run();
