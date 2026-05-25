@@ -11,7 +11,7 @@ DB_USER := postgres
 	infra-up infra-down infra-logs infra-ps infra-reset infra-reset-db \
 	app-up app-down app-logs app-ps app-reset \
 	all-up all-down all-logs all-ps all-reset \
-	db-shell db-create-auth
+	db-shell db-wait db-create-all db-create-auth db-create-accounts db-create-projects
 
 help:
 	@echo "INFRA (docker-compose-infra.yml) — только postgres/kafka/zookeeper/kafka-ui"
@@ -96,7 +96,8 @@ all-ps:
 all-reset:
 	$(COMPOSE) -f $(INFRA) -f $(APP) down -v --remove-orphans
 	$(COMPOSE) -f $(INFRA) -f $(APP) up -d
-	$(MAKE) db-create-auth
+	$(MAKE) db-wait
+	$(MAKE) db-create-all
 
 db-shell:
 	$(COMPOSE) -f $(INFRA) exec $(DB_SERVICE) psql -U $(DB_USER)
@@ -104,3 +105,24 @@ db-shell:
 db-create-auth:
 	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='auth'" | grep -q 1 || \
 	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -c "CREATE DATABASE auth;"
+	
+db-create-accounts:
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='accounts'" | grep -q 1 || \
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -c "CREATE DATABASE accounts;"
+	
+db-create-projects:
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='projects'" | grep -q 1 || \
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -c "CREATE DATABASE projects;"
+	
+db-create-files:
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='files'" | grep -q 1 || \
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -c "CREATE DATABASE files;"
+	
+db-create-all: db-create-auth db-create-accounts db-create-projects db-create-files
+
+db-wait:
+	@echo "Waiting for Postgres..."
+	@until $(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) pg_isready -U $(DB_USER) -d postgres > /dev/null 2>&1; do \
+		sleep 1; \
+	done
+	@echo "Postgres is ready"
