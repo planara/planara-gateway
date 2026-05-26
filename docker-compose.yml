@@ -85,6 +85,25 @@ services:
       Minio__AccessKey: "minioadmin"
       Minio__SecretKey: "minioadmin"
       Minio__UseSsl: "false"
+      
+  benchmarks:
+    image: ghcr.io/planara/planara-benchmarks:latest
+    container_name: planara-benchmarks
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8088:8080"
+      - "8089:8081"
+    command: [ "--migrate" ]
+    environment:
+      DbConnections__Postgres__ConnectionString: "User ID=postgres;Password=postgres;Host=postgres;Port=5432;Database=benchmarks;Pooling=true;Include Error Detail=true"
+      DbConnections__Redis__ConnectionString: "redis:6379"
+      Jwt__Issuer: "planara-auth"
+      Jwt__Audience: "planara"
+      Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+      Jwt__AccessTokenMinutes: "15"
+      GraphQL__Name: "GraphQLSchema"
 
 volumes:
   pgdata:

@@ -118,7 +118,11 @@ db-create-files:
 	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='files'" | grep -q 1 || \
 	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -c "CREATE DATABASE files;"
 	
-db-create-all: db-create-auth db-create-accounts db-create-projects db-create-files
+db-create-benchmarks:
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname='benchmarks'" | grep -q 1 || \
+	$(COMPOSE) -f $(INFRA) exec -T $(DB_SERVICE) psql -U $(DB_USER) -d postgres -c "CREATE DATABASE benchmarks;"
+	
+db-create-all: db-create-auth db-create-accounts db-create-projects db-create-files db-create-benchmarks
 
 db-wait:
 	@echo "Waiting for Postgres..."
