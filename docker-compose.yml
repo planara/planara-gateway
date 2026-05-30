@@ -1,7 +1,7 @@
 services:
   auth:
     image: ghcr.io/planara/planara-auth:latest
-    container_name: planara-auth
+    container_name: svc-auth
     depends_on:
       postgres:
         condition: service_healthy
@@ -24,7 +24,7 @@ services:
       
   accounts:
     image: ghcr.io/planara/planara-accounts:latest
-    container_name: planara-accounts
+    container_name: svc-accounts
     depends_on:
       postgres:
         condition: service_healthy
@@ -48,7 +48,7 @@ services:
       
   projects:
     image: ghcr.io/planara/planara-projects:latest
-    container_name: planara-projects
+    container_name: svc-projects
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,7 +67,7 @@ services:
       
   files:
     image: ghcr.io/planara/planara-files:latest
-    container_name: planara-files
+    container_name: svc-files
     depends_on:
       postgres:
         condition: service_healthy
@@ -88,7 +88,7 @@ services:
       
   benchmarks:
     image: ghcr.io/planara/planara-benchmarks:latest
-    container_name: planara-benchmarks
+    container_name: svc-benchmarks
     depends_on:
       postgres:
         condition: service_healthy
