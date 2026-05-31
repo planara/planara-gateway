@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: svc-gateway
+  name: pres-gateway
   namespace: planara
 spec:
   replicas: 1
@@ -9,17 +9,17 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: svc-gateway
+      app: pres-gateway
   template:
     metadata:
       labels:
-        app: svc-gateway
+        app: pres-gateway
     spec:
       imagePullSecrets:
         - name: ghcr-secret
 
       containers:
-        - name: svc-gateway
+        - name: pres-gateway
           image: ghcr.io/planara/planara-gateway:latest
 
           ports:
