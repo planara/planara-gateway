@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pres-gateway
+  namespace: planara
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: pres-gateway
+  template:
+    metadata:
+      labels:
+        app: pres-gateway
+    spec:
+      imagePullSecrets:
+        - name: ghcr-secret
+
+      containers:
+        - name: pres-gateway
+          image: ghcr.io/planara/planara-gateway:latest
+
+          ports:
+            - name: http
+              containerPort: 8080
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+
+            - name: Jwt__Issuer
+              value: "planara-auth"
+
+            - name: Jwt__Audience
+              value: "planara"
+
+            - name: Jwt__SigningKey
+              valueFrom:
+                secretKeyRef:
+                  name: planara-common-secrets
+                  key: Jwt__SigningKey
+
+            - name: Jwt__AccessTokenMinutes
+              value: "15"
+
+            - name: DbConnections__Redis__ConnectionString
+              valueFrom:
+                secretKeyRef:
+                  name: planara-common-secrets
+                  key: DbConnections__Redis__ConnectionString
+
+            - name: GraphQL__Name
+              value: "GraphQLSchema"
+
+            - name: GraphQL__Auth__Uri
+              value: "http://svc-auth:8080/graphql"
+
+            - name: GraphQL__Accounts__Uri
+              value: "http://svc-accounts:8080/graphql"
+
+            - name: GraphQL__Projects__Uri
+              value: "http://svc-projects:8080/graphql"
+
+            - name: GraphQL__Benchmarks__Uri
+              value: "http://svc-benchmarks:8080/graphql"
+
+            - name: Rest__Routes__files-route__ClusterId
+              value: "files-cluster"
+
+            - name: Rest__Routes__files-route__RateLimiterPolicy
+              value: "rest"
+
+            - name: Rest__Routes__files-route__Match__Path
+              value: "/files/{**catch-all}"
+
+            - name: Rest__Routes__files-route__Transforms__0__PathPrefix
+              value: "/api"
+
+            - name: Rest__Clusters__files-cluster__Destinations__files-service__Address
+              value: "http://svc-files:8080/"
+
+          readinessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 12
+
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 6
