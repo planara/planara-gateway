@@ -1,4 +1,5 @@
 using System.Threading.RateLimiting;
+using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Planara.Common.Configuration;
 using Planara.Common.GraphQL.Fusion;
@@ -96,7 +97,11 @@ app.UseHeaderPropagation();
 app.MapHealthChecks("/health");
 
 app.MapGraphQL("/api")
-    .RequireRateLimiting("graphql");
+    .RequireRateLimiting("graphql")
+    .WithOptions(new GraphQLServerOptions
+    {
+        Tool = { Enable = app.Environment.IsDevelopment() }
+    });
 
 app.MapReverseProxy();
 
