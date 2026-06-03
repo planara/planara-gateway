@@ -96,8 +96,6 @@ all-ps:
 all-reset:
 	$(COMPOSE) -f $(INFRA) -f $(APP) down -v --remove-orphans
 	$(COMPOSE) -f $(INFRA) -f $(APP) up -d
-	$(MAKE) db-wait
-	$(MAKE) db-create-all
 
 db-shell:
 	$(COMPOSE) -f $(INFRA) exec $(DB_SERVICE) psql -U $(DB_USER)

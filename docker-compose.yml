@@ -19,7 +19,8 @@ services:
       Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
       Jwt__AccessTokenMinutes: "15"
       Kafka__BootstrapServers: "kafka:29092"
-      Kafka__ProducerTopics__Auth: "auth"
+      Kafka__ProducerTopics__UserCreated: "UserCreated"
+      Kafka__ProducerTopics__UserDeleted: "UserDeleted"
       GraphQL__Name: "GraphQLSchema"
       
   accounts:
@@ -42,8 +43,9 @@ services:
       Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
       Jwt__AccessTokenMinutes: "15"
       Kafka__BootstrapServers: "kafka:29092"
-      Kafka__ConsumerTopics__Auth: "auth"
-      Kafka__ConsumerGroupId: "planara-accounts"
+      Kafka__ConsumerTopics__UserCreated: "UserCreated"
+      Kafka__ConsumerTopics__UserDeleted: "UserDeleted"
+      Kafka__ConsumerGroupId: "svc-accounts"
       GraphQL__Name: "GraphQLSchema"
       
   projects:
@@ -63,6 +65,9 @@ services:
       Jwt__Audience: "planara"
       Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
       Jwt__AccessTokenMinutes: "15"
+      Kafka__BootstrapServers: "kafka:29092"
+      Kafka__ConsumerTopics__UserDeleted: "UserDeleted"
+      Kafka__ConsumerGroupId: "svc-projects"
       GraphQL__Name: "GraphQLSchema"
       
   files:
@@ -85,6 +90,9 @@ services:
       Minio__AccessKey: "minioadmin"
       Minio__SecretKey: "minioadmin"
       Minio__UseSsl: "false"
+      Kafka__BootstrapServers: "kafka:29092"
+      Kafka__ConsumerTopics__UserDeleted: "UserDeleted"
+      Kafka__ConsumerGroupId: "svc-files"
       
   benchmarks:
     image: ghcr.io/planara/planara-benchmarks:latest
@@ -103,6 +111,9 @@ services:
       Jwt__Audience: "planara"
       Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
       Jwt__AccessTokenMinutes: "15"
+      Kafka__BootstrapServers: "kafka:29092"
+      Kafka__ConsumerTopics__UserDeleted: "UserDeleted"
+      Kafka__ConsumerGroupId: "svc-benchmarks"
       GraphQL__Name: "GraphQLSchema"
 
 volumes:
