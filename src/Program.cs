@@ -3,6 +3,7 @@ using HotChocolate.AspNetCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Planara.Common.Configuration;
 using Planara.Common.GraphQL.Fusion;
+using Planara.Gateway.Handlers;
 using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,7 +48,9 @@ builder
     .AddHttpClient("Fusion")
     .ConfigurePrimaryHttpMessageHandler(sp =>
     {
-        var c = sp.GetRequiredService<IConfiguration>().GetValue<int?>("Fusion:MaxConnectionPerServer") ?? 10000;
+        var c = sp.GetRequiredService<IConfiguration>()
+            .GetValue<int?>("Fusion:MaxConnectionPerServer") ?? 10000;
+
         return new SocketsHttpHandler
         {
             UseProxy = false,
@@ -56,7 +59,19 @@ builder
             MaxConnectionsPerServer = c
         };
     })
-    .AddHeaderPropagation();
+    .AddHeaderPropagation()
+    .AddHttpMessageHandler<RegistrationCookieHandler>();
+
+builder.Services.AddHeaderPropagation(c =>
+{
+    c.Headers.Add("GraphQL-Preflight");
+    c.Headers.Add("Authorization");
+    c.Headers.Add("X-Planara-Registration-Flow");
+    c.Headers.Add("X-Planara-Registration-Token");
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<RegistrationCookieHandler>();
 
 builder.Services.AddHeaderPropagation(c =>
 {
