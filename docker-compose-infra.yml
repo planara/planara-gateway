@@ -85,7 +85,7 @@ services:
       - redis-data:/data
         
   minio:
-    image: minio/minio:latest
+    image: ghcr.io/planara/minio:RELEASE.2025-04-22T22-12-26Z
     container_name: planara-minio
     ports:
       - "9000:9000"

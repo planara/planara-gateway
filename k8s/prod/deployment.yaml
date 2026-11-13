@@ -71,6 +71,9 @@ spec:
 
             - name: GraphQL__Benchmarks__Uri
               value: "http://svc-benchmarks:8080/graphql"
+              
+            - name: GraphQL__Privacy__Uri
+              value: "http://svc-privacy:8080/graphql"
 
             - name: Rest__Routes__files-route__ClusterId
               value: "files-cluster"
