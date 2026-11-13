@@ -59,7 +59,13 @@ builder
             MaxConnectionsPerServer = c
         };
     })
-    .AddHeaderPropagation()
+    .AddHeaderPropagation(c =>
+    {
+        c.Headers.Add("GraphQL-Preflight");
+        c.Headers.Add("Authorization");
+        c.Headers.Add("X-Planara-Registration-Flow");
+        c.Headers.Add("X-Planara-Registration-Token");
+    })
     .AddHttpMessageHandler<RegistrationCookieHandler>();
 
 builder.Services.AddHttpContextAccessor();
