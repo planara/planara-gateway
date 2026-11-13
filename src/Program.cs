@@ -59,14 +59,16 @@ builder
             MaxConnectionsPerServer = c
         };
     })
-    .AddHeaderPropagation(c =>
-    {
-        c.Headers.Add("GraphQL-Preflight");
-        c.Headers.Add("Authorization");
-        c.Headers.Add("X-Planara-Registration-Flow");
-        c.Headers.Add("X-Planara-Registration-Token");
-    })
+    .AddHeaderPropagation()
     .AddHttpMessageHandler<RegistrationCookieHandler>();
+
+builder.Services.AddHeaderPropagation(c =>
+{
+    c.Headers.Add("GraphQL-Preflight");
+    c.Headers.Add("Authorization");
+    c.Headers.Add("X-Planara-Registration-Flow");
+    c.Headers.Add("X-Planara-Registration-Token");
+});
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<RegistrationCookieHandler>();
