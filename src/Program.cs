@@ -62,14 +62,6 @@ builder
     .AddHeaderPropagation()
     .AddHttpMessageHandler<RegistrationCookieHandler>();
 
-builder.Services.AddHeaderPropagation(c =>
-{
-    c.Headers.Add("GraphQL-Preflight");
-    c.Headers.Add("Authorization");
-    c.Headers.Add("X-Planara-Registration-Flow");
-    c.Headers.Add("X-Planara-Registration-Token");
-});
-
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddTransient<RegistrationCookieHandler>();
 
@@ -77,6 +69,8 @@ builder.Services.AddHeaderPropagation(c =>
 {
     c.Headers.Add("GraphQL-Preflight");
     c.Headers.Add("Authorization");
+    c.Headers.Add("X-Planara-Registration-Flow");
+    c.Headers.Add("X-Planara-Registration-Token");
 });
 
 builder
@@ -99,11 +93,15 @@ var app = builder.Build();
 
 app.UseRouting();
 
-app.UseCors(c => c
-    .AllowAnyOrigin()
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-);
+app.UseCors(c =>
+{
+    if (app.Environment.IsDevelopment())
+        c.WithOrigins("http://localhost:5173").AllowCredentials();
+    else
+        c.AllowAnyOrigin();
+
+    c.AllowAnyHeader().AllowAnyMethod();
+});
 
 app.UseRateLimiter();
 
